@@ -1,0 +1,22 @@
+{%include 'myblog/header.html'%}
+<br><br><br><br><br><br>
+
+<div class="col-md-offset-2 col-md-8">
+        <form role="form" method="post" action="{%url 'update_post' id%}" enctype="multipart/form-data">
+            {%csrf_token%}
+            <br style="clear:both">
+            <h3 style="margin-bottom: 25px; text-align: center;">Edite Articale</h3>
+            <style>
+                th, td {
+                    padding: 10px;
+                }
+            </style>
+            <table class="col-lg-12">
+                {{ form.as_table }}
+            </table>
+            <button type="submit" id="submit" name="submit" class="btn btn-primary pull-right">Submit Form</button>
+        </form>
+</div>
+
+<br><br>
+{%include 'myblog/footer.html'%}

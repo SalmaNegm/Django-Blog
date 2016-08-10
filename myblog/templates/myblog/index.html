@@ -1,0 +1,85 @@
+{% include 'myblog/header.html' %}
+<!--=========== BEGIN SLIDER SECTION ================-->
+    <section id="sliderArea">
+      <!-- Start slider wrapper -->
+      <div class="top-slider">
+        {% for post in posts|slice:'[:2]' %}
+        <!-- Start First slide -->
+        <div class="top-slide-inner">
+          <div class="slider-img">
+            <img src="/blog{{post.image.url}}" alt="">
+          </div>
+          <div class="slider-text">
+            <h2><strong>{{post.title}}</strong></h2>
+            <p>{{post.content|truncatechars_html:20}}</p>
+            <div class="readmore_area">
+              <a data-hover="Read More" href="{%url 'single_post' post.id%}"><span>Read More</span></a>
+            </div>
+          </div>
+        </div>
+        <!-- End First slide -->
+        {%endfor%}
+      </div><!-- /top-slider -->
+    </section>
+    <!--=========== END SLIDER SECTION ================-->
+    <!--=========== BEGAIN Home Blog SECTION ================-->
+    <section id="homeBLog">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12 col-md-12">
+            <div class="homBlog-area">
+             <!-- Start Service Title -->
+              <div class="section-heading">
+                <h2>Latest Articales</h2>
+                <div class="line"></div>
+              </div>
+              <!-- Start Home Blog Content -->
+              <div class="homeBlog-content">
+                <div class="row">
+                    {%for post in posts%}
+                      <!-- Start Single Blog -->
+                      <div class="col-lg-4 col-md-4 col-sm-4">
+                        <div class="single-Blog">
+                          <div class="single-blog-left">
+                            <ul class="blog-comments-box">
+                              <li>{{post.pub_date|date:'N'}}<h2>{{post.pub_date|date:'j'}}</h2>{{post.pub_date|date:'Y'}}</li>
+                              <li><span class="fa fa-eye"></span>{{post.num_views}}</li>
+                              <!--<li><a href="#"><span class="fa fa-comments"></span>5</a></li>-->
+                            </ul>
+                          </div>
+                          <div class="single-blog-right">
+                            <div class="blog-img">
+                              <figure class="blog-figure">
+                               <a href="#"><img src="/blog{{post.image.url}}" alt="img"></a>
+                                <span class="image-effect"></span>
+                              </figure>
+                            </div>
+                            <div class="blog-author">
+                              <ul>
+                                <li>By <a href="#">{{post.user.username}}</a></li>
+                                <!--<li>In <a href="#">Dental</a></li>-->
+                              </ul>
+                            </div>
+                            <div class="blog-content">
+                              <h2>{{post.title}}</h2>
+                              <p>{{post.content|truncatechars_html:9}}</p>
+                              <div class="readmore_area">
+                                <a href="{%url 'single_post' post.id%}" data-hover="Read More"><span>Read More</span></a>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    {%endfor%}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!--=========== End Home Blog SECTION ================-->
+
+
+{% include 'myblog/footer.html' %}
+
