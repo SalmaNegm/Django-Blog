@@ -87,3 +87,7 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+
+myblog/static/myblog/images/
+myblog/migrations/
