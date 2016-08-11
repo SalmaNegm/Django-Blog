@@ -8,7 +8,9 @@ from django.http import Http404
 from django.views import generic
 from django.contrib.auth import authenticate, login, logout
 from django.core.urlresolvers import reverse
-from .forms import PostForm
+from .forms import PostForm, CommentForm
+from django.contrib.auth.models import User
+from django.core import serializers
 # from django.contrib.auth.decorators import login_required
 
 def index(request):
@@ -60,11 +62,23 @@ def show_posts(request):
 
 # def single_post(request,pk):
 #     post=get_object_or_404(Post,pk=pk)
-#     return render(request,'myblog/single-articale.html',{'post':post})
+#     comment_form=CommentForm(request.POST or None)
+#     comment_form['post'].field.widget.attrs['value']=pk
+#     return render(request,'myblog/single-articale.html',{'post':post,'comment_form':comment_form})
 
-class PostView(generic.DetailView):
+class PostView(generic.DetailView): #single post page
+
     model = Post
     template_name = 'myblog/single-articale.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(PostView, self).get_context_data(**kwargs)
+        context['comment_form'] = CommentForm(None)
+        context['comment_form']['post'].field.widget.attrs['value'] = self.kwargs['pk']
+        context['comments']=Comment.objects.filter(post=self.kwargs['pk'])
+        context['latest_posts']=Post.objects.filter(is_published=True).order_by('-pub_date')[:3]
+        context['most_viewed_posts']=Post.objects.filter(is_published=True).order_by('-num_views','-pub_date')[:3]
+        return context
 
 def update_post(request,pk):
     if request.method == 'POST':
@@ -83,6 +97,47 @@ def update_post(request,pk):
 def delete_post(request,pk):
     post=Post.objects.get(pk=pk).delete()
     return HttpResponseRedirect(reverse('show_posts'))
+
+# def create_comment(request):
+#     form = CommentForm(request.POST)
+#     if form.is_valid():
+#         new_comment=form.save(commit=False)
+#         new_comment.user=request.user
+#         if request.POST.has_key('parent'):
+#             new_comment.parent=get_object_or_404(Comment,id=request.POST['parent'])
+#         else:
+#             new_comment.parent=None
+#         new_comment.save()
+#         return  HttpResponse('done')
+
+def create_comment(request):
+    new_comment=Comment(content=request.POST['content'],)
+    if request.POST['parent'] != 'c':
+         new_comment.parent=get_object_or_404(Comment,id=request.POST['parent'])
+    else:
+        new_comment.parent=None
+    new_comment.user=get_object_or_404(User,id=request.POST['user'])
+    new_comment.post=get_object_or_404(Post,id=request.POST['post'])
+    new_comment.save()
+    return HttpResponse(serializers.serialize('json',Comment.objects.filter(id=new_comment.id)))
+
+def delete_comment(request):
+    comment=get_object_or_404(Comment,id=request.POST['id'])
+    comment.delete()
+    return HttpResponse('done')
+
+    # new_comment=form.save(commit=False)
+    # new_comment.user=request.user
+    # if request.POST.has_key('parent'):
+    #     new_comment.parent=get_object_or_404(Comment,id=request.POST['parent'])
+    # else:
+    #     new_comment.parent=None
+    # new_comment.save()
+    # return  HttpResponse('done')
+
+
+    # return HttpResponseRedirect(reverse('PostView'))
+
 # def post(request,post_id):
 #
 #         # post=Post.objects.get(id=post_id)

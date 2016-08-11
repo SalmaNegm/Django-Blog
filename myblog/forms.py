@@ -12,9 +12,25 @@ class PostForm(ModelForm):
             'title':widgets.TextInput({'class':'col-lg-12'}),
             'image':widgets.FileInput({'class':'col-lg-12'}),
         }
-        labels = {
-            'name': _('Writer'),
+        # labels = {
+        #     'name': _('Writer'),
+        # }
+
+class CommentForm(ModelForm):
+    class Meta:
+        model=Comment
+        fields=['content','post']
+        widgets = {
+            'content': widgets.Textarea(attrs={'rows': 5, 'class':'col-lg-12','placeholder':'write comment ...'}),
+            'post':widgets.HiddenInput(),
         }
+        labels = {
+            'content': _(''),
+        }
+
+
+
+
 
     # def __init__(self, *args, **kwargs):
     #     super(PostForm, self).__init__(*args, **kwargs)
