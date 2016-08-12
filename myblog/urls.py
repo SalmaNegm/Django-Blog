@@ -16,4 +16,7 @@ urlpatterns=[
     url(r'^articale/(?P<pk>[0-9]+)/update',views.update_post,name='update_post'),
     url(r'^comment/add',views.create_comment,name='create_comment'),
     url(r'^comment/delete',views.delete_comment,name='delete_comment'),
+    url(r'^comment/like',views.like_comment,name='like_comment'),
+    url(r'^comment/unlike',views.unlike_comment,name='unlike_comment'),
+
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,5 +1,10 @@
 {%include 'myblog/header.html'%}
+<style>
+  .like-active{
+    color: #337ab7;
+  }
 
+</style>
 <!--=========== START BLOG SECTION ================-->
     <section id="blogArchive">
       <div class="row">
@@ -250,7 +255,7 @@
                             <br>
                               <!-- Start Comments  -->
                               <div class="comments-area">
-                                <h3 class="comments-title">5 Comments</h3>
+                                <h3 class="comments-title">Comments</h3>
                                 {%if user.is_authenticated%}
                                 <form class="comment-form">
                                   {%csrf_token%}
@@ -277,6 +282,11 @@
 
                                            <span class="comments-date"> {{comment.modification_date|timesince}} ago</span>
                                            <p>{{comment.content}}</p>
+                                            {% if user in comment.likes.all%}
+                                              <span class="glyphicon glyphicon-thumbs-up col-lg-offset-10 unlike like-active" aria-hidden="true" id="{{comment.id}}">{{comment.likes.count}}</span>
+                                            {%else%}
+                                            <span class="glyphicon glyphicon-thumbs-up col-lg-offset-10 like" aria-hidden="true" id="{{comment.id}}">{{comment.likes.count}}</span>
+                                            {%endif%}
                                           </div>
                                         </div>
                                       </li>
@@ -296,6 +306,12 @@
                                                <h4 class="author-name">{{reply.user.username}}</h4>
                                                <span class="comments-date">{{reply.modification_date|timesince}} ago</span>
                                                <p>{{reply.content}}</p>
+                                                {% if user in reply.likes.all%}
+                                                  <span class="glyphicon glyphicon-thumbs-up col-lg-offset-10 unlike like-active" aria-hidden="true" id="{{reply.id}}">{{reply.likes.count}}</span>
+                                                {%else%}
+                                                <span class="glyphicon glyphicon-thumbs-up col-lg-offset-10 like" aria-hidden="true" id="{{reply.id}}">{{reply.likes.count}}</span>
+                                                {%endif%}
+
                                               </div>
                                             </div>
                                           </li>
@@ -383,12 +399,12 @@
                             <li>
                               <div class="media">
                                 <div class="media-left">
-                                  <a href="#" class="news-img">
+                                  <a href="{%url 'single_post' post.id%}" class="news-img">
                                     <img alt="img" src="/blog{{post.image.url}}" class="media-object">
                                   </a>
                                 </div>
                                 <div class="media-body">
-                                 <a href="blog-single.html">{{post.title}}</a>
+                                 <a href="{%url 'single_post' post.id%}">{{post.title}}</a>
                                  <span class="feed-date">{{post.pub_date|date:'d.m.Y'}}</span>
                                 </div>
                               </div>
@@ -404,12 +420,12 @@
                             <li>
                               <div class="media">
                                 <div class="media-left">
-                                  <a href="#" class="news-img">
+                                  <a href="{%url 'single_post' post.id%}" class="news-img">
                                     <img alt="img" src="/blog{{post.image.url}}" class="media-object">
                                   </a>
                                 </div>
                                 <div class="media-body">
-                                 <a href="blog-single.html">{{post.title}}</a>
+                                 <a href="{%url 'single_post' post.id%}">{{post.title}}</a>
                                  <span class="feed-date">{{post.pub_date|date:'m.d.Y'}}</span>
                                 </div>
                               </div>
@@ -506,7 +522,7 @@
          str += '{%now "N m, Y, i:s a"%}'
         str += '</span><p>'
         str += comment.content
-        str += '</p></div></div></li>'
+        str += '</p><span class="glyphicon glyphicon-thumbs-up col-lg-offset-10 like" aria-hidden="true" id="'+$.parseJSON(data)[0].pk+'">0</span></div></div></li>'
         if(parent != 'c')
           {$(str).insertBefore(form);}
         else
@@ -527,7 +543,7 @@
       },
       error: function()
       {
-        alert('error');
+        console.log('error');
       }
     });
   });
@@ -555,7 +571,60 @@
       },
       error: function()
       {
-        alert('error');
+        console.log('error');
+      }
+    });
+  });
+
+   $(document).on('click','.like',function(event){
+    event.preventDefault();
+    element=$(this);
+    comment_id=$(this).attr('id');
+    csrfmiddlewaretoken= $('input[name=csrfmiddlewaretoken]').val()
+    user_id= {{user.id}} ;
+    $.ajax({
+      type: 'POST',
+      url: "/blog/comment/like",
+      data:{
+      comment_id: comment_id,
+      user_id: user_id ,
+      csrfmiddlewaretoken: csrfmiddlewaretoken
+      },
+      success: function(data){
+        element.removeClass('like')
+        element.addClass('unlike')
+        element.text(parseInt('  '+ element.text())+1)
+        element.addClass('like-active')
+      },
+      error: function()
+      {
+        console.log('error');
+      }
+    });
+  });
+  $(document).on('click','.unlike',function(event){
+    event.preventDefault();
+    element=$(this);
+    comment_id=$(this).attr('id');
+    csrfmiddlewaretoken= $('input[name=csrfmiddlewaretoken]').val()
+    user_id= {{user.id}} ;
+    $.ajax({
+      type: 'POST',
+      url: "/blog/comment/unlike",
+      data:{
+      comment_id: comment_id,
+      user_id: user_id ,
+      csrfmiddlewaretoken: csrfmiddlewaretoken
+      },
+      success: function(data){
+        element.removeClass('unlike')
+        element.addClass('like')
+        element.text(parseInt('  '+element.text())-1)
+        element.removeClass('like-active')
+      },
+      error: function()
+      {
+        console.log('error');
       }
     });
   });

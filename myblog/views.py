@@ -126,6 +126,19 @@ def delete_comment(request):
     comment.delete()
     return HttpResponse('done')
 
+def like_comment(request):
+    comment=get_object_or_404(Comment,id=request.POST['comment_id'])
+    user=request.POST['user_id']
+    comment.likes.add(user)
+    return HttpResponse('done')
+
+def unlike_comment(request):
+    comment=get_object_or_404(Comment,id=request.POST['comment_id'])
+    user=request.POST['user_id']
+    comment.likes.remove(user)
+    return HttpResponse('done')
+
+
     # new_comment=form.save(commit=False)
     # new_comment.user=request.user
     # if request.POST.has_key('parent'):
