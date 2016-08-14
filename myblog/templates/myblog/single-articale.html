@@ -42,7 +42,7 @@
                             <ul class="blog-comments-box">
                               <li>{{post.pub_date|date:'N'}}<h2>{{post.pub_date|date:'j'}}</h2>{{post.pub_date|date:'Y'}}</li>
                               <li><span class="fa fa-eye"></span>{{post.num_views}}</li>
-                              <!--<li><a href="#"><span class="fa fa-comments"></span>5</a></li>-->
+                              <li><a href="#"><span class="fa fa-comments"></span>{{post.comment_set.all.count}}</a></li>
                             </ul>
                           </div>
                           <div class="single-blog-right">
@@ -55,8 +55,12 @@
                             <div class="blog-author">
                               <ul>
                                 <li>By <a href="#">{{post.user.username}}</a></li>
-                                <li>In <a href="#">Dental</a></li>
-                                <li><span class="fa fa-tags"></span><a href="#">Dental</a> <a href="#">Surgery</a> <a href="#">Cardiac</a></li>
+                                <!--<li><span class="fa fa-tags"></span><a href="#">Dental</a> <a href="#">Surgery</a> <a href="#">Cardiac</a></li>-->
+                                <li><span class="fa fa-tags"></span>
+                                  {%for tag in post.tag_set.all%}
+                                    <a href="{%url 'similar_posts' tag.id%}">{{tag.name}} .</a>
+                                  {%endfor%}
+                                </li>
                               </ul>
                             </div>
                             <div class="blog-content blog-details">
@@ -197,6 +201,7 @@
                               <div class="similar-post">
                                 <h2>Similar News  </h2>
                                  <div class="row">
+                                   {%for post in similars%}
                                     <div class="col-md-6 col-sm-6">
                                       <div class="media">
                                           <div class="media-left">
@@ -205,50 +210,12 @@
                                             </a>
                                           </div>
                                           <div class="media-body">
-                                           <a href="blog-single.html">Dummy text of the Medical Post</a>
-                                           <span class="feed-date">27.02.15</span>
+                                           <a href="blog-single.html">{{post.title}}</a>
+                                           <span class="feed-date">{{post.pub_date|date:'d.m.Y'}}</span>
                                           </div>
                                       </div>
                                     </div>
-                                    <div class="col-md-6 col-sm-6">
-                                      <div class="media">
-                                        <div class="media-left">
-                                          <a class="news-img" href="#">
-                                            <img class="media-object" src="images/small-blog-img1.jpg" alt="img">
-                                          </a>
-                                        </div>
-                                        <div class="media-body">
-                                         <a href="blog-single.html">Dummy text of the Medical Post</a>
-                                         <span class="feed-date">27.02.15</span>
-                                        </div>
-                                      </div>
-                                    </div>
-                                    <div class="col-md-6 col-sm-6">
-                                      <div class="media">
-                                          <div class="media-left">
-                                            <a class="news-img" href="#">
-                                              <img class="media-object" src="images/small-blog-img1.jpg" alt="img">
-                                            </a>
-                                          </div>
-                                          <div class="media-body">
-                                           <a href="blog-single.html">Dummy text of the Medical Post</a>
-                                           <span class="feed-date">27.02.15</span>
-                                          </div>
-                                      </div>
-                                    </div>
-                                    <div class="col-md-6 col-sm-6">
-                                      <div class="media">
-                                        <div class="media-left">
-                                          <a class="news-img" href="#">
-                                            <img class="media-object" src="images/small-blog-img1.jpg" alt="img">
-                                          </a>
-                                        </div>
-                                        <div class="media-body">
-                                         <a href="blog-single.html">Dummy text of the Medical Post</a>
-                                         <span class="feed-date">27.02.15</span>
-                                        </div>
-                                      </div>
-                                   </div>
+                                   {%endfor%}
                                   </div>
                                 </div>
                               </div>
@@ -283,9 +250,17 @@
                                            <span class="comments-date"> {{comment.modification_date|timesince}} ago</span>
                                            <p>{{comment.content}}</p>
                                             {% if user in comment.likes.all%}
+                                              {%if user.is_authenticated%}
                                               <span class="glyphicon glyphicon-thumbs-up col-lg-offset-10 unlike like-active" aria-hidden="true" id="{{comment.id}}">{{comment.likes.count}}</span>
+                                              {%else%}
+                                              <div class="col-lg-offset-10">{{comment.likes.count}} Like{{ comment.likes.count|pluralize }}</div>
+                                              {%endif%}
                                             {%else%}
+                                            {%if user.is_authenticated%}
                                             <span class="glyphicon glyphicon-thumbs-up col-lg-offset-10 like" aria-hidden="true" id="{{comment.id}}">{{comment.likes.count}}</span>
+                                            {%else%}
+                                              <div class="col-lg-offset-10">{{comment.likes.count}} Like{{ comment.likes.count|pluralize }}</div>
+                                              {%endif%}
                                             {%endif%}
                                           </div>
                                         </div>
@@ -307,9 +282,17 @@
                                                <span class="comments-date">{{reply.modification_date|timesince}} ago</span>
                                                <p>{{reply.content}}</p>
                                                 {% if user in reply.likes.all%}
+                                                {%if user.is_authenticated%}
                                                   <span class="glyphicon glyphicon-thumbs-up col-lg-offset-10 unlike like-active" aria-hidden="true" id="{{reply.id}}">{{reply.likes.count}}</span>
                                                 {%else%}
+                                              <div class="col-lg-offset-10">{{reply.likes.count}} Like{{ reply.likes.count|pluralize }}</div>
+                                              {%endif%}
+                                                {%else%}
+                                                {%if user.is_authenticated%}
                                                 <span class="glyphicon glyphicon-thumbs-up col-lg-offset-10 like" aria-hidden="true" id="{{reply.id}}">{{reply.likes.count}}</span>
+                                                {%else%}
+                                              <div class="col-lg-offset-10">{{reply.likes.count}} Like{{ reply.likes.count|pluralize }}</div>
+                                              {%endif%}
                                                 {%endif%}
 
                                               </div>
@@ -318,6 +301,7 @@
                                         </div>
                                         {%endif%}
                                       {%endfor%}
+                                        {%if user.is_authenticated%}
                                           <li>
                                         <form class="comment-form">
                                           {%csrf_token%}
@@ -326,6 +310,7 @@
                                           <input type="submit" value="Reply" class="reply-btn"/>
                                         </form>
                                       </li>
+                                        {%endif%}
                                         </ul>
 
                                       {%endif%}
@@ -433,18 +418,18 @@
                             {%endfor%}
                           </ul>
                         </div>
-                        <!-- Start sidebar widget -->
-                        <div class="sidebar-widget">
-                          <h3>Tags</h3>
-                          <ul class="tag-nav">
-                            <li><a href="#">Dental</a></li>
-                            <li><a href="#">Surgery</a></li>
-                            <li><a href="#">Pediatric</a></li>
-                            <li><a href="#">Cardiac</a></li>
-                            <li><a href="#">Ophthalmology</a></li>
-                            <li><a href="#">Diabetes</a></li>
-                          </ul>
-                        </div>
+                        <!--&lt;!&ndash; Start sidebar widget &ndash;&gt;-->
+                        <!--<div class="sidebar-widget">-->
+                          <!--<h3>Tags</h3>-->
+                          <!--<ul class="tag-nav">-->
+                            <!--<li><a href="#">Dental</a></li>-->
+                            <!--<li><a href="#">Surgery</a></li>-->
+                            <!--<li><a href="#">Pediatric</a></li>-->
+                            <!--<li><a href="#">Cardiac</a></li>-->
+                            <!--<li><a href="#">Ophthalmology</a></li>-->
+                            <!--<li><a href="#">Diabetes</a></li>-->
+                          <!--</ul>-->
+                        <!--</div>-->
                         <!--&lt;!&ndash; Start sidebar widget &ndash;&gt;-->
                         <!--<div class="sidebar-widget">-->
                           <!--<h3>Text Widget</h3>-->

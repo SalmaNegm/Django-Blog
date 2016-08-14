@@ -12,6 +12,8 @@ from .forms import PostForm, CommentForm
 from django.contrib.auth.models import User
 from django.core import serializers
 # from django.contrib.auth.decorators import login_required
+import json
+from collections import Counter
 
 def index(request):
     posts=Post.objects.filter(is_published=True).order_by('-pub_date')[:6]
@@ -47,11 +49,19 @@ def create_post(request):
                 new_post.user_id=request.user.id
                 if request.POST.has_key('is_published'):
                     new_post.pub_date=datetime.datetime.now()
+                tags=[ tag.lower() for tag in request.POST['tags'].split(',')] #for case insensitive comparison
+                tags=list(set(tags)) #unique list
+                new_tags=[Tag(name=tag) for tag in tags if not Tag.objects.filter(name__iexact=tag).exists() ]
+                Tag.objects.bulk_create(new_tags)
                 new_post.save()
+                for tag in tags:
+                    new_post.tag_set.add(Tag.objects.get(name=tag))
                 return HttpResponseRedirect(reverse('create_post'))
-            # return HttpResponse(request.FILES['image'].name)
+
         form = PostForm(request.POST or None)
-        return render(request,'myblog/create-post.html',{'form':form})
+        all_tags=json.dumps([unicode(i) for i in Tag.objects.values_list('name',flat=True)])
+
+        return render(request,'myblog/create-post.html',{'form':form,'tags':all_tags})
     else:
         return render(request,'myblog/login.html')
     # return render(request,'myblog/create-post.html')
@@ -72,12 +82,16 @@ class PostView(generic.DetailView): #single post page
     template_name = 'myblog/single-articale.html'
 
     def get_context_data(self, **kwargs):
+        post=get_object_or_404(Post,id=self.kwargs['pk'])
+        post.num_views += 1
+        post.save()
         context = super(PostView, self).get_context_data(**kwargs)
         context['comment_form'] = CommentForm(None)
         context['comment_form']['post'].field.widget.attrs['value'] = self.kwargs['pk']
         context['comments']=Comment.objects.filter(post=self.kwargs['pk'])
         context['latest_posts']=Post.objects.filter(is_published=True).order_by('-pub_date')[:3]
         context['most_viewed_posts']=Post.objects.filter(is_published=True).order_by('-num_views','-pub_date')[:3]
+        context['similars']=[tuple[0] for tuple in Counter(Post.objects.filter(is_published=True,tag__name__in=['php','python'])).most_common(4)]
         return context
 
 def update_post(request,pk):
@@ -137,8 +151,14 @@ def unlike_comment(request):
     user=request.POST['user_id']
     comment.likes.remove(user)
     return HttpResponse('done')
+def get_tags(request):
+    return HttpResponse(serializers.serialize('json',Tag.objects.all().values_list('name',flat=True)))
 
-
+def similar_posts(request,tag_id):
+    posts=Post.objects.filter(tag__id=tag_id,is_published=True).order_by('-pub_date')
+    latest_posts=Post.objects.filter(is_published=True).order_by('-pub_date')[:3]
+    most_viewed_posts=Post.objects.filter(is_published=True).order_by('-num_views','-pub_date')[:3]
+    return render(request,'myblog/similar_posts.html',{'posts':posts,'latest_posts':latest_posts,'most_viewed_posts':most_viewed_posts})
     # new_comment=form.save(commit=False)
     # new_comment.user=request.user
     # if request.POST.has_key('parent'):

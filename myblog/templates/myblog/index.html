@@ -44,7 +44,7 @@
                             <ul class="blog-comments-box">
                               <li>{{post.pub_date|date:'N'}}<h2>{{post.pub_date|date:'j'}}</h2>{{post.pub_date|date:'Y'}}</li>
                               <li><span class="fa fa-eye"></span>{{post.num_views}}</li>
-                              <!--<li><a href="#"><span class="fa fa-comments"></span>5</a></li>-->
+                              <li><a href="#"><span class="fa fa-comments"></span>{{post.comment_set.all.count}}</a></li>
                             </ul>
                           </div>
                           <div class="single-blog-right">
