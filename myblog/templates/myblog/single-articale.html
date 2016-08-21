@@ -43,6 +43,11 @@
                               <li>{{post.pub_date|date:'N'}}<h2>{{post.pub_date|date:'j'}}</h2>{{post.pub_date|date:'Y'}}</li>
                               <li><span class="fa fa-eye"></span>{{post.num_views}}</li>
                               <li><a href="#"><span class="fa fa-comments"></span>{{post.comment_set.all.count}}</a></li>
+                              {%if user in post.marked.all%}
+                                <li><span class="glyphicon glyphicon-bookmark unmark-post"></span></li>
+                              {%else%}
+                                <li><span class="glyphicon glyphicon-bookmark mark-post" style="color:gray"></span></li>
+                              {%endif%}
                             </ul>
                           </div>
                           <div class="single-blog-right">
@@ -206,7 +211,7 @@
                                       <div class="media">
                                           <div class="media-left">
                                             <a class="news-img" href="#">
-                                              <img class="media-object" src="images/small-blog-img1.jpg" alt="img">
+                                              <img class="media-object" src="/blog{{post.image.url}}" alt="img">
                                             </a>
                                           </div>
                                           <div class="media-body">
@@ -613,4 +618,49 @@
       }
     });
   });
+  $(document).on('click','.mark-post',function(event){
+    event.preventDefault();
+    element=$(this);
+    csrfmiddlewaretoken= $('input[name=csrfmiddlewaretoken]').val()
+    $.ajax({
+      type: 'POST',
+      url: '/blog/posts/'+{{post.id}}+'/mark',
+      data:{
+        user_id:{{user.id}},
+        csrfmiddlewaretoken: csrfmiddlewaretoken
+      },
+      success: function(data){
+        element.addClass('unmark-post')
+        element.css('color','#ffd133');
+        element.removeClass('mark-post')
+      },
+      error: function(error)
+      {
+        console.log(error);
+      }
+    });
+  });
+
+  $(document).on('click','.unmark-post',function(event){
+    csrfmiddlewaretoken= $('input[name=csrfmiddlewaretoken]').val()
+    element=$(this);
+    $.ajax({
+      type: 'POST',
+      url: '/blog/posts/'+{{post.id}}+'/unmark',
+      data:{
+        user_id:{{user.id}},
+        csrfmiddlewaretoken: csrfmiddlewaretoken
+      },
+      success: function(data){
+        element.addClass('mark-post')
+        element.css('color','#808080')
+        element.removeClass('unmark-post')
+      },
+      error: function(error)
+      {
+        console.log('error');
+      }
+    });
+  });
+
 </script>

@@ -20,5 +20,8 @@ urlpatterns=[
     url(r'^comment/unlike',views.unlike_comment,name='unlike_comment'),
     url(r'^tags/',views.get_tags,name='stored_tags'),
     url(r'^posts/(?P<tag_id>[0-9]+)/tag',views.similar_posts,name='similar_posts'),
+    url(r'^posts/(?P<post_id>[0-9]+)/mark',views.mark_post,name='mark_post'),
+    url(r'^posts/(?P<post_id>[0-9]+)/unmark',views.unmark_post,name='unmark_post'),
+    url(r'^posts/marked',views.marked_posts,name='marked_posts'),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

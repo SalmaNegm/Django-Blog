@@ -170,6 +170,19 @@ def similar_posts(request,tag_id):
 
 
     # return HttpResponseRedirect(reverse('PostView'))
+def mark_post(request,post_id):
+    post=get_object_or_404(Post,id=post_id)
+    post.marked.add(get_object_or_404(User,id=request.POST['user_id']))
+    return HttpResponse('done')
+
+def unmark_post(request,post_id):
+    post=get_object_or_404(Post,id=post_id)
+    post.marked.remove(request.POST['user_id'])
+    return HttpResponse('done')
+
+def marked_posts(request):
+    posts=request.user.mark.all()
+    return render(request,'myblog/marked-posts.html',{'posts':posts})
 
 # def post(request,post_id):
 #

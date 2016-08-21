@@ -12,6 +12,7 @@ class Post(models.Model):
     is_published=models.BooleanField()
 
     user=models.ForeignKey(User,on_delete=models.CASCADE)
+    marked=models.ManyToManyField(User,related_name='mark')
 
     def __str__(self):
         return self.title
