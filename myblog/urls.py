@@ -9,6 +9,7 @@ urlpatterns=[
     url(r'^articale/(?P<pk>[0-9]+)/show',views.PostView.as_view(),name='single_post'),
     url(r'^login/$',views.log_in,name='login'), #login page
     url(r'^signin/$',views.signin,name='signin'),
+    url(r'^signup/$',views.signup,name='signup'),
     url(r'^logout/',views.log_out,name='logout'),
     url(r'^articale/create',views.create_post,name='create_post'),
     url(r'^articale/list',views.show_posts,name='show_posts'),

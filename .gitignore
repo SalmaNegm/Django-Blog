@@ -91,3 +91,5 @@ ENV/
 
 myblog/static/myblog/images/
 myblog/migrations/
+
+.idea/workspace.xml

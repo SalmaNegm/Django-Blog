@@ -7,23 +7,23 @@
 </style>
 <!--=========== START BLOG SECTION ================-->
     <section id="blogArchive">
-      <div class="row">
-        <div class="col-lg-12 col-md-12">
-          <div class="blog-breadcrumbs-area">
-            <div class="container">
-              <div class="blog-breadcrumbs-left">
-                <h2>Blog</h2>
-              </div>
-              <div class="blog-breadcrumbs-right">
-                <ol class="breadcrumb">
-                  <li>You are here</li>
-                  <li><a href="#">Home</a></li>
-                  <li class="active">Blog Single</li>
-                </ol>
-              </div>
-            </div>
-          </div>
-        </div>
+      <!--<div class="row">-->
+        <!--<div class="col-lg-12 col-md-12">-->
+          <!--<div class="blog-breadcrumbs-area">-->
+            <!--<div class="container">-->
+              <!--<div class="blog-breadcrumbs-left">-->
+                <!--<h2>Blog</h2>-->
+              <!--</div>-->
+              <!--<div class="blog-breadcrumbs-right">-->
+                <!--<ol class="breadcrumb">-->
+                  <!--<li>You are here</li>-->
+                  <!--<li><a href="#">Home</a></li>-->
+                  <!--<li class="active">Blog Single</li>-->
+                <!--</ol>-->
+              <!--</div>-->
+            <!--</div>-->
+          <!--</div>-->
+        <!--</div>-->
       </div>
       <div class="row">
         <div class="col-lg-12 col-md-12">
@@ -215,7 +215,7 @@
                                             </a>
                                           </div>
                                           <div class="media-body">
-                                           <a href="blog-single.html">{{post.title}}</a>
+                                           <a href="{%url 'single_post' post.id%}">{{post.title}}</a>
                                            <span class="feed-date">{{post.pub_date|date:'d.m.Y'}}</span>
                                           </div>
                                       </div>
