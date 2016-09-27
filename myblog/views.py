@@ -5,6 +5,7 @@ from .models import Post,Comment,Tag
 from django.shortcuts import render
 from django.shortcuts import render
 from django.http import Http404
+from django.core.exceptions import PermissionDenied
 from django.views import generic
 from django.contrib.auth import authenticate, login, logout
 from django.core.urlresolvers import reverse
@@ -24,16 +25,19 @@ def log_in(request):
     return render(request,'myblog/login.html')
 
 def signin(request):
-    user=authenticate(username=request.POST['username'],password=request.POST['password'])
-    if user:
-        if user.is_active:
-            login(request,user)
-            return HttpResponseRedirect(reverse('index'))
-            # return HttpResponse('wellcome')
+    if request.method == 'POST':
+        user=authenticate(username=request.POST['username'],password=request.POST['password'])
+        if user:
+            if user.is_active:
+                login(request,user)
+                return HttpResponseRedirect(reverse('index'))
+                # return HttpResponse('wellcome')
+            else:
+                return render(request,'myblog/inactive.html')
         else:
-            return render(request,'myblog/inactive.html')
+            return render(request,'myblog/login.html',{'error':'incorrect username/password'})
     else:
-        return HttpResponse('incorrect!!')
+        return HttpResponseRedirect(reverse('login'))
 
 def log_out(request):
     logout(request)
@@ -59,6 +63,9 @@ def create_post(request):
                     for tag in tags:
                         new_post.tag_set.add(Tag.objects.get(name=tag))
                     return HttpResponseRedirect(reverse('create_post'))
+                else:
+                    all_tags=json.dumps([unicode(i) for i in Tag.objects.values_list('name',flat=True)])
+                    return render(request,'myblog/create-post.html',{'form':form,'tags':all_tags})
 
             form = PostForm(request.POST or None)
 
@@ -106,41 +113,49 @@ class PostView(generic.DetailView): #single post page
 @login_required(login_url='/blog/login/')
 def update_post(request,pk):
     if request.user.is_active:
-        if request.method == 'POST':
-            post=get_object_or_404(Post,id=pk)
-            form = PostForm(request.POST,request.FILES,instance=post)
-            if form.is_valid():
-                new_post=form.save(commit=False)
-                if request.POST.has_key('is_published'):
-                    new_post.pub_date=datetime.datetime.now()
+        post=get_object_or_404(Post,id=pk)
+        if request.user.id == post.user.id:
+            if request.method == 'POST':
+                    post=get_object_or_404(Post,id=pk)
+                    form = PostForm(request.POST,request.FILES,instance=post)
+                    if form.is_valid():
+                        new_post=form.save(commit=False)
+                        if request.POST.has_key('is_published'):
+                            new_post.pub_date=datetime.datetime.now()
 
-                new_post.tag_set.clear()
-                new_tags_list=list(set([ tag.lower() for tag in request.POST['tags'].split(',')])) #for case insensitive comparison
-                new_tags=[Tag(name=tag) for tag in new_tags_list ]
-                new_new_tags=[tag for tag in new_tags if not Tag.objects.filter(name__iexact=tag.name).exists() ]
-                Tag.objects.bulk_create(new_new_tags)
-                for tag in new_tags:
-                    new_post.tag_set.add(Tag.objects.get(name=tag.name))
-                new_post.save()
+                        new_post.tag_set.clear()
+                        new_tags_list=list(set([ tag.lower() for tag in request.POST['tags'].split(',')])) #for case insensitive comparison
+                        new_tags=[Tag(name=tag) for tag in new_tags_list ]
+                        new_new_tags=[tag for tag in new_tags if not Tag.objects.filter(name__iexact=tag.name).exists() ]
+                        Tag.objects.bulk_create(new_new_tags)
+                        for tag in new_tags:
+                            new_post.tag_set.add(Tag.objects.get(name=tag.name))
+                        new_post.save()
 
-                return HttpResponseRedirect(reverse('show_posts'))
-            else:
-                all_tags=json.dumps([unicode(i) for i in Tag.objects.values_list('name',flat=True)])
-                old_tags= str(','.join(Tag.objects.filter(post=get_object_or_404(Post,id=pk)).values_list('name',flat=True)))
-                return render(request,'myblog/update-post.html',{'form':form,'id':pk,'tags':all_tags,'old_tags':old_tags})
+                        return HttpResponseRedirect(reverse('show_posts'))
+                    else:
+                        all_tags=json.dumps([unicode(i) for i in Tag.objects.values_list('name',flat=True)])
+                        old_tags= str(','.join(Tag.objects.filter(post=get_object_or_404(Post,id=pk)).values_list('name',flat=True)))
+                        return render(request,'myblog/update-post.html',{'form':form,'id':pk,'tags':all_tags,'old_tags':old_tags,'image':post.image.url})
+        else:
+            raise PermissionDenied
 
-        form=PostForm(instance=get_object_or_404(Post,pk=pk))
+        form=PostForm(instance=post)
         all_tags=json.dumps([unicode(i) for i in Tag.objects.values_list('name',flat=True)])
         old_tags= str(','.join(Tag.objects.filter(post=get_object_or_404(Post,id=pk)).values_list('name',flat=True)))
-        return render(request,'myblog/update-post.html',{'form':form,'id':pk,'tags':all_tags,'old_tags':old_tags})
+        return render(request,'myblog/update-post.html',{'form':form,'id':pk,'tags':all_tags,'old_tags':old_tags,'image':post.image.url})
     else:
         return render(request,'myblog/inactive.html')
 
 @login_required(login_url='/blog/login/')
 def delete_post(request,pk):
     if request.user.is_active:
-        Post.objects.get(pk=pk).delete()
-        return HttpResponseRedirect(reverse('show_posts'))
+        post=Post.objects.get(pk=pk)
+        if post.user.id == request.user.id:
+            post.delete()
+            return HttpResponseRedirect(reverse('show_posts'))
+        else:
+            raise PermissionDenied
     else:
         return render(request,'myblog/inactive.html')
 
@@ -173,32 +188,35 @@ def create_comment(request):
 
 @login_required(login_url='/blog/login/')
 def delete_comment(request):
-    # if request.user.is_active:
+    if request.user.is_active:
         comment=get_object_or_404(Comment,id=request.POST['id'])
-        comment.delete()
-        return HttpResponse('done')
-    # else:
-    #     return render(request,'myblog/inactive.html')
+        if comment.user.id == request.user.id:
+            comment.delete()
+            return HttpResponse('done')
+        else:
+            raise PermissionDenied
+    else:
+        return render(request,'myblog/inactive.html')
 
 @login_required(login_url='/blog/login/')
 def like_comment(request):
-    # if request.user.is_active:
+    if request.user.is_active:
         comment=get_object_or_404(Comment,id=request.POST['comment_id'])
         user=request.POST['user_id']
         comment.likes.add(user)
         return HttpResponse('done')
-    # else:
-    #     return render(request,'myblog/inactive.html')
+    else:
+        return render(request,'myblog/inactive.html')
 
 @login_required(login_url='/blog/login/')
 def unlike_comment(request):
-    # if request.user.is_active:
+    if request.user.is_active:
         comment=get_object_or_404(Comment,id=request.POST['comment_id'])
         user=request.POST['user_id']
         comment.likes.remove(user)
         return HttpResponse('done')
-    # else:
-    #     return render(request,'myblog/inactive.html')
+    else:
+        return render(request,'myblog/inactive.html')
 
 def get_tags(request):
     return HttpResponse(serializers.serialize('json',Tag.objects.all().values_list('name',flat=True)))
@@ -222,21 +240,21 @@ def similar_posts(request,tag_id):
     # return HttpResponseRedirect(reverse('PostView'))
 @login_required(login_url='/blog/login/')
 def mark_post(request,post_id):
-    # if request.user.is_active:
+    if request.user.is_active:
         post=get_object_or_404(Post,id=post_id)
         post.marked.add(get_object_or_404(User,id=request.POST['user_id']))
         return HttpResponse('done')
-    # else:
-    #     return render(request,'myblog/inactive.html')
+    else:
+        return render(request,'myblog/inactive.html')
 
 @login_required(login_url='/blog/login/')
 def unmark_post(request,post_id):
-    # if request.user.is_active:
+    if request.user.is_active:
         post=get_object_or_404(Post,id=post_id)
         post.marked.remove(request.POST['user_id'])
         return HttpResponse('done')
-    # else:
-    #     return render(request,'myblog/inactive.html')
+    else:
+        return render(request,'myblog/inactive.html')
 
 @login_required(login_url='/blog/login/')
 def marked_posts(request):

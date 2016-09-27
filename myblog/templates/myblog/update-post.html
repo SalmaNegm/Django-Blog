@@ -1,51 +1,66 @@
-{%include 'myblog/header.html'%}
+{%extends 'myblog/layout.html'%}
+{%block title%}
+    Update Article | {{form.title.value}}
+{%endblock%}
+{%block content%}
 <br><br><br><br><br><br>
 {%load staticfiles%}
 <link rel='stylesheet' href="{% static 'myblog/js/bootstrap-tagsinput.css' %}">
 <link rel='stylesheet' href="{% static 'myblog/js/app.css' %}">
 
 <div class="col-md-offset-2 col-md-8">
-        <form role="form" method="post" action="{%url 'update_post' id%}" enctype="multipart/form-data">
+        <form role="form" method="post" action="{%url 'update_post' id%}" enctype="multipart/form-data" class="form-horizontal col-lg-12" novalidate>
             {%csrf_token%}
             <br style="clear:both">
             <h3 style="margin-bottom: 25px; text-align: center;">Edite Articale</h3>
-            <style>
-                th, td {
-                    padding: 10px;
-                }
-            </style>
-
-            <table class="col-lg-12">
-                <tr>
-                    <th></th>
-                    <td>
-                        <a href="#"><img alt="img" src="/blog{{form.image.value.url}}" width="100%" height="300px"></a>
-                    </td>
-                </tr>
-                {{ form.as_table }}
-                <tr>
-                    <th></th>
-                    <td>
-                        <input id='taginput' name="tags" type="text" value={{old_tags}} data-role="tagsinput" placeholder="add tags.." />
-                    </td>
-                </tr>
-                <tr>
-                    <th></th>
-                    <td>
-                        <button type="submit" id="submit" name="submit" class="btn btn-primary btn-block">UPDATE</button>
-                    </td>
-                </tr>
-            </table>
-            <div class="col-lg-offset-2 col-lg-10">
-
-
+            <a href="#"><img alt="img" src="/blog{{image}}" width="100%" height="300px" style="margin-bottom:30px"></a>
+            <div class="form-group has-feedback">
+                <label class='control-label col-xs-2' for="{{ form.title.id_for_label }}">Title</label>
+                <div class="col-xs-10" >
+                    {{ form.title }}
+                    <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+                </div>
+                <div style="color:red" class=" error-txt col-lg-offset-2 col-lg-9">{{ form.title.errors }}</div>
             </div>
+            <div class="form-group has-feedback">
+                <label class='control-label col-xs-2' for="{{ form.image.id_for_label }}">Image</label>
+                <div class="col-xs-10" >
+                    {{ form.image }}
+                    <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+                </div>
+                <div style="color:red" class=" error-txt col-lg-offset-2 col-lg-9">{{ form.image.errors }}</div>
+            </div>
+            <div class="form-group has-feedback">
+                <label class='control-label col-xs-2' for="{{ form.content.id_for_label }}">Content</label>
+                <div class="col-xs-10" >
+                    {{ form.content }}
+                    <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+                </div>
+                <div style="color:red" class=" error-txt col-lg-offset-2 col-lg-9">{{ form.content.errors }}</div>
+            </div>
+            <div class="form-group has-feedback">
+                <label class='control-label col-xs-2' for="{{ form.is_published.id_for_label }}">Is Published</label>
+                <div class="col-xs-10" >
+                    {{ form.is_published }}
+                    <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+                </div>
+                <div style="color:red" class=" error-txt col-lg-offset-2 col-lg-9">{{ form.is_published.errors }}</div>
+            </div>
+            <div class="form-group has-feedback">
+                <label class='control-label col-xs-2' for="taginput">Tags</label>
+                <div class="col-xs-10" >
+                    <input id='taginput' name="tags" type="text" value="" data-role="tagsinput" placeholder="add tags.." />
+                    <span id="helpBlock" class="help-block">use (,) to separate between tags</span>
+                    <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+                </div>
+            </div>
+            <button type="submit" id="submit" name="submit" class="btn btn-primary col-lg-offset-2 col-lg-10">UPDATE</button>
         </form>
 </div>
 
 <br><br>
-{%include 'myblog/footer.html'%}
-
+{%endblock%}
+{%block scripts%}
 <script src="{% static 'myblog/js/typeahead.js' %}"></script>
 <script src="{% static 'myblog/js/bootstrap-tagsinput.min.js' %}"></script>
 <script src="{% static 'myblog/js/app.js' %}"></script>
@@ -92,3 +107,4 @@
       maxTags: 5,
     });
 </script>
+{%endblock%}

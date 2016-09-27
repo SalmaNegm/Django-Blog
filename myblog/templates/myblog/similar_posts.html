@@ -1,5 +1,8 @@
-{%include 'myblog/header.html'%}
-
+{%extends 'myblog/layout.html'%}
+{%block title%}
+  Similar Posts
+{%endblock%}
+{%block content%}
 <!--=========== START BLOG SECTION ================-->
     <section id="blogArchive">
       <!--<div class="row">-->
@@ -51,6 +54,11 @@
                                 <div class="blog-author">
                                   <ul>
                                     <li>By <a href="#">{{post.user.username}}</a></li>
+                                    <li><span class="fa fa-tags"></span>
+                                      {%for tag in post.tag_set.all%}
+                                        <a href="{%url 'similar_posts' tag.id%}">{{tag.name}} .</a>
+                                      {%endfor%}
+                                    </li>
                                     <!--<li>In <a href="#">Dental</a></li>-->
                                   </ul>
                                 </div>
@@ -106,7 +114,7 @@
                                   </a>
                                 </div>
                                 <div class="media-body">
-                                 <a href="#">{{post.title}}</a>
+                                 <a href="{%url 'single_post' post.id%}">{{post.title}}</a>
                                  <span class="feed-date">{{post.date|date:'d.m.Y'}}</span>
                                 </div>
                               </div>
@@ -127,7 +135,7 @@
                                   </a>
                                 </div>
                                 <div class="media-body">
-                                 <a href="#">{{post.title}}</a>
+                                 <a href="{%url 'single_post' post.id%}">{{post.title}}</a>
                                  <span class="feed-date">{{post.date|date:'d.m.Y'}}</span>
                                 </div>
                               </div>
@@ -184,5 +192,4 @@
       </div>
     </section>
     <!--=========== END BLOG SECTION ================-->
-
-{%include 'myblog/footer.html'%}
+{%endblock%}

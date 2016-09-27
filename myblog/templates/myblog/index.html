@@ -1,4 +1,8 @@
-{% include 'myblog/header.html' %}
+{% extends 'myblog/layout.html' %}
+{%block title%}
+Salma's Blog
+{%endblock%}
+{%block content%}
 <!--=========== BEGIN SLIDER SECTION ================-->
     <section id="sliderArea">
       <!-- Start slider wrapper -->
@@ -81,5 +85,5 @@
     <!--=========== End Home Blog SECTION ================-->
 
 
-{% include 'myblog/footer.html' %}
+{%endblock%}
 
